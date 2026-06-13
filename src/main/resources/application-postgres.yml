@@ -1,0 +1,17 @@
+# Activate with: --spring.profiles.active=postgres
+# Provide DB_URL / DB_USERNAME / DB_PASSWORD via environment variables.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/taskmaster}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  h2:
+    console:
+      enabled: false
