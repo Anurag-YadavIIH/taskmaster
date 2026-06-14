@@ -1,0 +1,108 @@
+### TaskMaster API examples
+### Use with the VS Code "REST Client" extension, or translate to curl.
+### Run requests top to bottom; copy the token from the register/login response.
+
+@baseUrl = http://localhost:8080
+@token = PASTE_YOUR_TOKEN_HERE
+
+### 1. Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "email": "alice@example.com",
+  "password": "password123",
+  "fullName": "Alice Smith"
+}
+
+### 2. Login (returns a JWT)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "alice",
+  "password": "password123"
+}
+
+### 3. Get my profile
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{token}}
+
+### 4. Update my profile
+PUT {{baseUrl}}/api/users/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "fullName": "Alice S.", "bio": "Backend learner" }
+
+### 5. Create a team
+POST {{baseUrl}}/api/teams
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Platform Team", "description": "Core backend work" }
+
+### 6. Create a task
+POST {{baseUrl}}/api/tasks
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Implement login endpoint",
+  "description": "Add JWT-based auth",
+  "dueDate": "2026-07-01",
+  "priority": "HIGH"
+}
+
+### 7. List tasks with filters, search and sorting
+GET {{baseUrl}}/api/tasks?status=OPEN&priority=HIGH&search=login&sort=dueDate,asc&page=0&size=20
+Authorization: Bearer {{token}}
+
+### 8. Mark a task completed (replace 1 with the task id)
+PATCH {{baseUrl}}/api/tasks/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": "COMPLETED" }
+
+### 9. Assign a task (replace ids)
+PATCH {{baseUrl}}/api/tasks/1/assign
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "assigneeId": 2 }
+
+### 10. Add a comment
+POST {{baseUrl}}/api/tasks/1/comments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "content": "Started working on this." }
+
+### 11. Upload an attachment (multipart)
+POST {{baseUrl}}/api/tasks/1/attachments
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----boundary
+
+------boundary
+Content-Disposition: form-data; name="file"; filename="notes.txt"
+Content-Type: text/plain
+
+Some file content here
+------boundary--
+
+### 12. Real-time notification stream (Server-Sent Events)
+GET {{baseUrl}}/api/notifications/stream
+Authorization: Bearer {{token}}
+
+### 13. AI: generate a task description (requires AI enabled)
+POST {{baseUrl}}/api/ai/generate-description
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "title": "Set up CI pipeline", "keywords": "github actions, tests, build" }
+
+### 14. Logout (revokes the token)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}

@@ -48,14 +48,14 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- H2: default in-memory database (zero setup, great for demos/tests) -->
+        <!-- H2: in-memory database used only for tests (zero setup, fast) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
 
-        <!-- PostgreSQL: enabled via the "postgres" profile for production-style runs -->
+        <!-- PostgreSQL: default runtime database -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
