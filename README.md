@@ -233,37 +233,47 @@ Validation failures populate `fieldErrors` with field → message.
 
 ### High‑level design (HLD)
 
-```
-                ┌─────────────┐
-   HTTP / JSON  │   Client    │  (curl, Swagger UI, Postman, frontend)
- ───────────────►  (any)      │
-                └──────┬──────┘
-                       │  Bearer JWT
-            ┌──────────▼───────────────────────────────────┐
-            │              Spring Boot app                  │
-            │                                               │
-            │  JwtAuthenticationFilter → SecurityContext    │
-            │                 │                             │
-            │        ┌────────▼─────────┐                   │
-            │        │   Controllers    │  REST + validation│
-            │        └────────┬─────────┘                   │
-            │        ┌────────▼─────────┐                   │
-            │        │     Services     │  business logic,   │
-            │        │                  │  authorization,    │
-            │        │                  │  @Transactional    │
-            │        └────────┬─────────┘                   │
-            │        ┌────────▼─────────┐                   │
-            │        │   Repositories   │  Spring Data JPA   │
-            │        └────────┬─────────┘                   │
-            └─────────────────┼───────────────┬─────────────┘
-                              │                │
-                       ┌──────▼─────┐   ┌──────▼───────┐
-                       │  Database  │   │ Disk (files) │
-                       │ H2 / PgSQL │   │  /uploads    │
-                       └────────────┘   └──────────────┘
+```mermaid
+flowchart TB
+    User(["User<br/>(Browser)"])
 
-         External (optional): Anthropic Messages API for AI descriptions
-         Outbound (real-time): SSE stream pushes notifications to clients
+    subgraph Compose["docker compose"]
+        SPA["frontend container (nginx)<br/>React SPA — Vite/TS/Tailwind<br/>host :8081"]
+
+        subgraph BE["backend container (Spring Boot)<br/>host :8082"]
+            Sec["JwtAuthenticationFilter"]
+            Ctrl["Controllers<br/>REST + validation"]
+            Svc["Services<br/>business logic, authorization,<br/>@Transactional"]
+            Repo["Repositories<br/>Spring Data JPA"]
+        end
+
+        PG[("db container<br/>PostgreSQL<br/>host :5434")]
+        Vol[("uploads volume<br/>attachments")]
+    end
+
+    AI["Anthropic Messages API<br/>(optional AI descriptions)"]
+
+    User -->|"HTTP"| SPA
+    SPA -.->|"REST calls<br/>(VITE_API_BASE_URL)"| Sec
+    User -->|"Bearer JWT<br/>REST API"| Sec
+    User -.->|"SSE: live notifications"| Ctrl
+
+    Sec --> Ctrl --> Svc --> Repo
+    Repo --> PG
+    Svc --> Vol
+    Svc -.->|"optional"| AI
+
+    classDef fe fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px,color:#000;
+    classDef be fill:#d5e8d4,stroke:#82b366,stroke-width:2px,color:#000;
+    classDef db fill:#ffe6cc,stroke:#d79b00,stroke-width:2px,color:#000;
+    classDef ext fill:#f8cecc,stroke:#b85450,stroke-width:2px,color:#000;
+    classDef user fill:#e1d5e7,stroke:#9673a6,stroke-width:2px,color:#000;
+
+    class SPA fe;
+    class Sec,Ctrl,Svc,Repo be;
+    class PG,Vol db;
+    class AI ext;
+    class User user;
 ```
 
 ### Layered design (LLD)
