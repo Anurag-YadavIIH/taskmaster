@@ -2,19 +2,25 @@ package com.airtribe.taskmaster.controller;
 
 import com.airtribe.taskmaster.dto.request.UpdateProfileRequest;
 import com.airtribe.taskmaster.dto.response.UserResponse;
+import com.airtribe.taskmaster.dto.response.UserSearchResponse;
 import com.airtribe.taskmaster.security.UserPrincipal;
 import com.airtribe.taskmaster.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /** Profile endpoints for the currently authenticated user. */
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "Users", description = "View and update your profile")
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -35,5 +41,11 @@ public class UserController {
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userService.updateProfile(principal.getId(), request));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Search users by username, email or full name (for team invites and assignee pickers)")
+    public ResponseEntity<List<UserSearchResponse>> search(@RequestParam @NotBlank String q) {
+        return ResponseEntity.ok(userService.searchUsers(q));
     }
 }

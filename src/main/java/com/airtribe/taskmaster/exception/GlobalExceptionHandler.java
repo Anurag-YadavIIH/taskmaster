@@ -2,6 +2,7 @@ package com.airtribe.taskmaster.exception;
 
 import com.airtribe.taskmaster.dto.response.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -57,6 +58,12 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 "Validation failed", req.getRequestURI(), fieldErrors);
         return ResponseEntity.badRequest().body(body);
+    }
+
+    /** Turns @RequestParam/@PathVariable validation failures (e.g. blank query params) into a 400. */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
     /** Safety net: anything unexpected becomes a clean 500 rather than a stack trace. */
