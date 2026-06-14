@@ -1,0 +1,14 @@
+target/
+.git/
+.github/
+.claude/
+.idea/
+.vscode/
+*.iml
+uploads/
+*.log
+frontend/
+*.md
+.env
+.env.local
+api-examples.http
